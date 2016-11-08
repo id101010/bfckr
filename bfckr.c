@@ -39,6 +39,8 @@ void die(const char *message)
 // Parses and executes a brainfuck expression
 void bfuck_parser(char *input)
 {
+    int loop = 0;
+
     for(size_t i = 0; input[i] != 0; i++) { // where i is the instruction pointer
         switch(input[i]) {
         case '>':
@@ -68,8 +70,16 @@ void bfuck_parser(char *input)
         case '[':
             if(*p == 0) { // if the byte at the data pointer is zero
                 // jump forward to the command after the next ]
-                while(input[i] != ']') {
+                loop = 1;
+                // jump back to the command after the matching [
+                while(loop > 0) {
                     i++;
+                    if(input[i] == '[') {
+                        loop++;
+                    }
+                    if(input[i] == ']') {
+                        loop--;
+                    }
                 }
             } else {
                 continue; // increment instruction pointer
@@ -78,10 +88,18 @@ void bfuck_parser(char *input)
 
         case ']':
             if(*p != 0) { // if the byte at the data pointer is nonzero
-                // jump back to the command after the previous [
-                while(input[i] != '[') {
+                loop = 1;
+                // jump back to the command after the matching [
+                while(loop > 0) {
                     i--;
+                    if(input[i] == '[') {
+                        loop--;
+                    }
+                    if(input[i] == ']') {
+                        loop++;
+                    }
                 }
+
             } else {
                 continue; // increment instruction pointer
             }
