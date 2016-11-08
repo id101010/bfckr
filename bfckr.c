@@ -91,6 +91,9 @@ void bfuck_parser(char *input)
         case ' ':
             break;
 
+        case '\n':
+            break;
+
         default:
             printf("%c", *p);
             die("Invalid operant!");
