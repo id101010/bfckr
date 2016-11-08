@@ -1,4 +1,4 @@
-/* 
+/*
  * This program is free software. It comes without any warranty, to
  * the extent permitted by applicable law. You can redistribute it
  * and/or modify it under the terms of the Do What The Fuck You Want
@@ -14,11 +14,12 @@
 #include<ctype.h>
 
 // Amount of memory on the band tape
-#define MEMORY_SIZE 10000
+#define MEMORY_SIZE     10000
+#define MAX_INPUT_SIZE  1000
 
 // Memory initialized with zeros and its pointer
-uint8_t memory[MEMORY_SIZE] = {0};
-uint8_t *p = memory;
+char memory[MEMORY_SIZE] = {0};
+char *p = memory;
 
 // Prototypes
 void bfuck_parser(char *input);
@@ -38,65 +39,56 @@ void die(const char *message)
 // Parses and executes a brainfuck expression
 void bfuck_parser(char *input)
 {
-    char curr;
-    uint16_t loop;
-
-    for(uint16_t i = 0; input[i] != 0; i++) {
-        curr = input[i];
-
-        switch(curr) {
+    for(size_t i = 0; input[i] != 0; i++) { // where i is the instruction pointer
+        switch(input[i]) {
         case '>':
-            ++p;
+            ++p; // increment data pointer
             break;
 
         case '<':
-            --p;
+            --p; // decrement data pointer
             break;
 
         case '+':
-            ++*p;
+            ++(*p); // increment byte at data pointer
             break;
 
         case '-':
-            --*p;
+            --(*p); // decrement byte at data pointer
             break;
 
         case '.':
-            putchar(*p);
+            putchar(*p); // output the byte at data pointer
             break;
 
         case ',':
-            *p = getchar();
+            *p = getchar(); // accept one byte of input and store it at data pointer
             break;
 
         case '[':
-            continue;
-            break;
-
-        case ']':
-            if(*p) {
-                loop = 1;
-                while(loop) {
-                    curr = input[--i];
-                    if(curr == '[') {
-                        loop--;
-                    }
-                    if(curr == ']') {
-                        loop++;
-                    }
+            if(*p == 0) { // if the byte at the data pointer is zero
+                // jump forward to the command after the next ]
+                while(input[i] != ']') {
+                    i++;
                 }
+            } else {
+                continue; // increment instruction pointer
             }
             break;
 
-        case ' ':
-            break;
-
-        case '\n':
+        case ']':
+            if(*p != 0) { // if the byte at the data pointer is nonzero
+                // jump back to the command after the previous [
+                while(input[i] != '[') {
+                    i--;
+                }
+            } else {
+                continue; // increment instruction pointer
+            }
             break;
 
         default:
-            printf("%c", *p);
-            die("Invalid operant!");
+            // Do nothing
             break;
         }
     }
@@ -104,11 +96,30 @@ void bfuck_parser(char *input)
 
 int main(int argc, char* argv[])
 {
+    FILE *fp;
+    int i = 0;
+    int c;
+    char input[MAX_INPUT_SIZE];
+
+    // check arguments
     if(argc < 2) {
         die("Need more arguments.");
     }
 
-    bfuck_parser(argv[1]);
+    // try to open file
+    if((fp = fopen(argv[1], "rt")) == NULL) {
+        die("Couldn't open file.");
+    }
 
+    // read the whole file and store it in the input buffer
+    while((c = getc(fp)) != EOF) {
+        input[i++] = c;
+    }
+
+    // try to interpret it
+    bfuck_parser(input);
+
+    // close and exit
+    fclose(fp);
     exit(EXIT_SUCCESS);
 }
