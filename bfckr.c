@@ -30,7 +30,7 @@ void die(const char *message)
     if(errno) {
         perror(message);
     } else {
-        printf("[:-(] Error: %s\n", message);
+        printf("[:(] Error: %s\n", message);
     }
 
     exit(EXIT_FAILURE);
@@ -71,8 +71,7 @@ void bfuck_parser(char *input)
             if(*p == 0) { // if the byte at the data pointer is zero
                 // jump forward to the command after the next ]
                 loop = 1;
-                // jump back to the command after the matching [
-                while(loop > 0) {
+                while(loop > 0) { // count nested loops and make sure to get the matching ]
                     i++;
                     if(input[i] == '[') {
                         loop++;
@@ -88,9 +87,9 @@ void bfuck_parser(char *input)
 
         case ']':
             if(*p != 0) { // if the byte at the data pointer is nonzero
-                loop = 1;
                 // jump back to the command after the matching [
-                while(loop > 0) {
+                loop = 1;
+                while(loop > 0) { // count nested loops and make sure to get the matching [
                     i--;
                     if(input[i] == '[') {
                         loop--;
@@ -129,15 +128,17 @@ int main(int argc, char* argv[])
         die("Couldn't open file.");
     }
 
-    // read the whole file and store it in the input buffer
+    // read the file and store it in the input buffer
     while((c = getc(fp)) != EOF) {
         input[i++] = c;
     }
 
+    // close file after reading
+    fclose(fp);
+
     // try to interpret it
     bfuck_parser(input);
 
-    // close and exit
-    fclose(fp);
+    // exit
     exit(EXIT_SUCCESS);
 }

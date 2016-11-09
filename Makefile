@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-std=c99 -Wall -O2 -static -g
+CFLAGS=-std=c99 -Wall -O0 -static
 CLIBS=-lm
 PRGNAME=bfckr
 CFILES=$(shell find . -name '*.c')
@@ -9,17 +9,24 @@ RUN=valgrind --leak-check=full
 DEBUG=gdb --args
 ARGS="examples/rot13.bf"
 
-all: build run
+all: build
 
 clean:
 	$(STYLE) $(CFILES)
 	rm -f *.o
 	rm -f $(PRGNAME)
+
 build:
 	$(CC) $(CFLAGS) $(CLIBS) -o $(PRGNAME) -Isrc $(CFILES)
+
+debug:
+	$(CC) $(CFLAGS) -g $(CLIBS) -o $(PRGNAME) -Isrc $(CFILES)
+
+run_debug:
+	$(DEBUG) ./$(PRGNAME) $(ARGS)
+
 run:
 	./$(PRGNAME) $(ARGS)
+
 memtest:
 	$(RUN) ./$(PRGNAME) $(ARGS)
-debug:
-	$(DEBUG) ./$(PRGNAME) $(ARGS)
