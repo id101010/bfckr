@@ -16,6 +16,7 @@
 // Amount of memory on the band tape
 #define MEMORY_SIZE     10000
 #define MAX_INPUT_SIZE  10000
+#define clear()         printf("\033[H\033[J")
 
 // Memory initialized with zeros and its pointer
 char memory[MEMORY_SIZE] = {0};
@@ -37,8 +38,54 @@ void die(const char *message)
     exit(EXIT_FAILURE);
 }
 
+// Prints the bf source at the current location
+void print_sourceviewer()
+{
+    printf("Source viewer:"
+           "-----------------------------------------------------------"
+           "_____________________________>+++++++++++++++[<+>>>>>>>>+++"
+           "                             ^                             "
+           "                             ip=0                          "
+           "-----------------------------------------------------------"); // just to get the idea ...
+}
+
+// Prints memory information at the current memory location
+void print_memoryviewer()
+{
+    int pointerlocation = (p - memory)*sizeof(*memory); // find the arrayindex at which the pointer is pointing
+
+    printf("Memory viewer:                                             "
+           "-----------------------------------------------------------"
+           "000 000 000 000 000 000 001 001 000 000 000 000 000 000 000"
+           "                             ^                             "
+           "                            mp=1                           "
+           "249 250 251 252 253 254 000 001 002 003 004 005 006 007 008"
+           "-----------------------------------------------------------"); // just to get the idea ...
+}
+
+// Pauses the program flow and prints information
+void bfuck_debugger(char *bf_source_input, int instructionpointer)
+{
+    clear(); // clear terminal
+
+    printf("[s]: single step [c]: continue");
+
+    print_sourceviewer();
+    print_memoryviewer();
+
+    switch(getchar()) {
+    case 's':
+        // single step
+        break;
+    case 'c':
+        // continue
+        break;
+    }
+
+}
+
 // Parses and executes a brainfuck expression
-void bfuck_parser(char *input)
+void bfuck_execute(char *input)
 {
     int loop = 0;
 
@@ -117,6 +164,10 @@ void bfuck_parser(char *input)
             }
             break;
 
+        case '#':
+            // Breakpoint reached, start debugger ...
+            break;
+
         default:
             // Do nothing
             break;
@@ -150,7 +201,7 @@ int main(int argc, char* argv[])
     fclose(fp);
 
     // try to interpret it
-    bfuck_parser(input);
+    bfuck_execute(input);
 
     // exit
     exit(EXIT_SUCCESS);
