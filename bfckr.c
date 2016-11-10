@@ -15,11 +15,12 @@
 
 // Amount of memory on the band tape
 #define MEMORY_SIZE     10000
-#define MAX_INPUT_SIZE  1000
+#define MAX_INPUT_SIZE  10000
 
 // Memory initialized with zeros and its pointer
 char memory[MEMORY_SIZE] = {0};
 char *p = memory;
+int memcnt = 0;
 
 // Prototypes
 void bfuck_parser(char *input);
@@ -44,11 +45,23 @@ void bfuck_parser(char *input)
     for(size_t i = 0; input[i] != 0; i++) { // where i is the instruction pointer
         switch(input[i]) {
         case '>':
-            ++p; // increment data pointer
+            if(memcnt >= MEMORY_SIZE) { // prevent overrun
+                p = &memory[0];
+                memcnt = 0;
+            } else {
+                ++p; // increment data pointer
+                ++memcnt;
+            }
             break;
 
         case '<':
-            --p; // decrement data pointer
+            if(memcnt < 0) { // prevent underun
+                p = &memory[MEMORY_SIZE - 1];
+                memcnt = MEMORY_SIZE - 1;
+            } else {
+                --p; // decrement data pointer
+                --memcnt;
+            }
             break;
 
         case '+':
