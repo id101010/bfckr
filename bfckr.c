@@ -51,6 +51,11 @@ void init_bf_object(bf_code_t *bf)
     }
 }
 
+bool is_brainfuck(char c)
+{
+    return (c=='+') || (c=='-') || (c=='>') || (c=='<') || (c=='.') || (c==',') || (c=='[') || (c==']');
+}
+
 /* Error handler */
 void die(const char *message)
 {
@@ -66,46 +71,20 @@ void die(const char *message)
 /* Prints the bf source at the current location */
 void print_sourceviewer(bf_code_t *bf)
 {
+    int ip = (int)bf->ip; // save instruction pointer
+
     printf("\nSource viewer:\n");
-    printf("-------------------------------------------------------------\n"); // 62 dashes
+    printf("------------------------------------------------------------\n"); // 61 dashes
 
-    if(bf->ip <= 30) { // if there aren't enough instruction characters to print
-        for(int i = bf->ip; i >= 0; i--) { // print as much instructions as possible
-            printf("%c", bf->code[i]);
-        }
-        for(int i = 30-(bf->ip); i >= 0; i--) { // then fill with whitespaces
-            printf(" ");
-        }
+    // Print 30 valid chars before $ip and 30 after
+    for(int i=(ip-30); i<(ip+30); i++) {
+        putchar((i<0 || i>MAX_INPUT_SIZE) ? ' ' : bf->code[i]);
     }
 
-    if(bf->ip > 30) { // if there are enough instruction characters
-        for(int i = 30; i >= 0; i--) { // print 30 instruction chars before ip
-            printf("%c", bf->code[i]);
-        }
-    }
-
-    // print 30 instructions begining at ip
-    for(size_t i = bf->ip; i < bf->ip + 29; i++) {
-        if(bf->code[i] == '\n') {
-            printf(" ");
-        } else if(bf->code[i] == NULL) {
-            printf(" ");
-        } else {
-            printf("%c", bf->code[i]);
-        }
-    }
     printf("\n");
-    printf("                             ^                             \n");
-    printf("                             ip=%d                         \n", bf->ip);
-    printf("-------------------------------------------------------------\n");
-
-    /*printf("\nSource viewer:                                           \n"
-           "-----------------------------------------------------------\n"
-           "_____________________________>+++++++++++++++[<+>>>>>>>>+++\n"
-           "                             ^                             \n"
-           "                             ip=0                          \n"
-           "-----------------------------------------------------------\n"); // just to get the idea ...
-    */
+    printf("                              ^                             \n");
+    printf("                              ip=%d                         \n", ip);
+    printf("------------------------------------------------------------\n");
 }
 
 /* Prints memory information at the current memory location */
@@ -127,7 +106,7 @@ void print_memoryviewer(bf_code_t *bf)
 /* Pauses the program flow and prints information */
 void bfuck_debugger(bf_code_t *bf) //char *bf_source_input, int instructionpointer)
 {
-    //clear(); // clear terminal
+    clear(); // clear terminal
 
     printf("[s]: single step [c]: continue\n");
 
@@ -151,6 +130,7 @@ void bfuck_execute(bf_code_t *bf)
     int loop = 0;
 
     for(size_t i = bf->ip; bf->code[i] != 0; bf->ip=i++) { // where i is the instruction pointer
+        bfuck_debugger(bf);
         switch(bf->code[i]) {
         case '>':
             if(bf->mp >= MEMORY_SIZE) { // prevent overrun
@@ -256,13 +236,14 @@ int main(int argc, char* argv[])
 
     // read the file and store it in the input buffer
     while((c = getc(fp)) != EOF) {
-        bf.code[i++]  = c;
+        if(is_brainfuck(c)) {
+            bf.code[i++]  = c;
+        }
     }
 
     // close file after reading
     fclose(fp);
 
-    bfuck_debugger(&bf);
     // try to interpret it
     bfuck_execute(&bf);
 
