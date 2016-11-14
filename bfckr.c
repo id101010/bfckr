@@ -107,7 +107,7 @@ void print_memoryviewer(bf_code_t *bf)
 
     // print the adresses beneath the memory cells
     for(int i=(mp-7); i<(mp+8); i++) {
-        printf("%03d ", ((i<0 || i>MEMORY_SIZE) ? 0 : abs(i-mp)));
+        printf("%03d ", ((i<0 || i>MEMORY_SIZE) ? 0 : (mp+i)));
     }
 
 
