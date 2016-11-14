@@ -34,6 +34,7 @@ void bfuck_debugger(bf_code_t *bf);
 void print_sourceviewer(bf_code_t *bf);
 void print_memoryviewer(bf_code_t *bf);
 void init_bf_object(bf_code_t *bf);
+bool is_brainfuck(char c);
 
 /* initialize bf object */
 void init_bf_object(bf_code_t *bf)
@@ -73,10 +74,10 @@ void print_sourceviewer(bf_code_t *bf)
 {
     int ip = (int)bf->ip; // save instruction pointer
 
-    printf("\nSource viewer:\n");
+    printf("\nSource viewer:                                            \n");
     printf("------------------------------------------------------------\n"); // 61 dashes
 
-    // Print 30 valid chars before $ip and 30 after
+    // print 30 valid chars before $ip and 30 after
     for(int i=(ip-30); i<(ip+30); i++) {
         putchar((i<0 || i>MAX_INPUT_SIZE) ? ' ' : bf->code[i]);
     }
@@ -90,17 +91,29 @@ void print_sourceviewer(bf_code_t *bf)
 /* Prints memory information at the current memory location */
 void print_memoryviewer(bf_code_t *bf)
 {
-    // int pointerlocation = (p - memory)*sizeof(*memory); // find the arrayindex at which the pointer is pointing
+    int mp = (int)bf->mp; // save the current memory pointer
+
+    printf("\nMemory viewer:                                            \n");
+    printf("------------------------------------------------------------\n"); // 61 dashes
+
+    // print the memory cells
+    for(int i=(mp-7); i<(mp+8); i++) {
+        printf("%03d ", ((i<0 || i>MEMORY_SIZE) ? 0 : bf->memory[i]));
+    }
+
+    printf("\n                              ^                             \n");
+    printf("                              mp=%d                         \n", mp);
 
 
+    // print the adresses beneath the memory cells
+    for(int i=(mp-7); i<(mp+8); i++) {
+        printf("%03d ", ((i<0 || i>MEMORY_SIZE) ? 0 : abs(i-mp)));
+    }
 
-    printf("\nMemory viewer:                                           \n"
-           "-----------------------------------------------------------\n"
-           "000 000 000 000 000 000 001 001 000 000 000 000 000 000 000\n"
-           "                             ^                             \n"
-           "                            mp=1                           \n"
-           "249 250 251 252 253 254 000 001 002 003 004 005 006 007 008\n"
-           "-----------------------------------------------------------\n"); // just to get the idea ...
+
+    //"249 250 251 252 253 254 000 001 002 003 004 005 006 007 008\n"
+
+    printf("\n------------------------------------------------------------\n");
 }
 
 /* Pauses the program flow and prints information */
@@ -130,7 +143,6 @@ void bfuck_execute(bf_code_t *bf)
     int loop = 0;
 
     for(size_t i = bf->ip; bf->code[i] != 0; bf->ip=i++) { // where i is the instruction pointer
-        bfuck_debugger(bf);
         switch(bf->code[i]) {
         case '>':
             if(bf->mp >= MEMORY_SIZE) { // prevent overrun
@@ -211,6 +223,8 @@ void bfuck_execute(bf_code_t *bf)
             // Do nothing
             break;
         }
+
+        bfuck_debugger(bf);
     }
 }
 
