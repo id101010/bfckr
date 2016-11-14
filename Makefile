@@ -7,7 +7,7 @@ HFILES=$(shell find . -name '*.h')
 STYLE=astyle --style=1tbs
 RUN=valgrind --leak-check=full
 DEBUG=gdb --args
-ARGS="examples/rot13.bf"
+ARGS="examples/pi.bf"
 
 all: build
 

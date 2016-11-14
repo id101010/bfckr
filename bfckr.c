@@ -12,21 +12,46 @@
 #include<errno.h>
 #include<assert.h>
 #include<ctype.h>
+#include<stdbool.h>
 
-// Amount of memory on the band tape
+// Defines
 #define MEMORY_SIZE     10000
 #define MAX_INPUT_SIZE  10000
 #define clear()         printf("\033[H\033[J")
 
-// Memory initialized with zeros and its pointer
-char memory[MEMORY_SIZE] = {0};
-char *p = memory;
-int memcnt = 0;
+// Struct which holds the brainfuck code, the bandtape and some helpervariables
+typedef struct bf_code_s {
+    char memory[MEMORY_SIZE];   // Memory initialized
+    size_t mp;                  // Memory pointer
+    char code[MAX_INPUT_SIZE];  // Input buffer for the bf code
+    size_t ip;                  // Instruction pointer
+    bool debug;                 // debug flag
+} bf_code_t;
 
 // Prototypes
-void bfuck_parser(char *input);
+void bfuck_parser(bf_code_t *bf);
+void bfuck_debugger(bf_code_t *bf);
+void print_sourceviewer(bf_code_t *bf);
+void print_memoryviewer(bf_code_t *bf);
+void init_bf_object(bf_code_t *bf);
 
-// Error handler
+/* initialize bf object */
+void init_bf_object(bf_code_t *bf)
+{
+    bf->mp = 0; // set data pointer to zero
+    bf->ip = 0; // set instruction pointer to zero
+    bf->debug = false; // reset the debug flag
+
+    for(size_t i = 0; i < MEMORY_SIZE; i++) {
+        bf->memory[i] = 0;
+    }
+
+    for(size_t i = 0; i < MAX_INPUT_SIZE; i++) {
+        bf->code[i] = 0;
+    }
+}
+
+/* Error handler */
 void die(const char *message)
 {
     if(errno) {
@@ -38,40 +63,40 @@ void die(const char *message)
     exit(EXIT_FAILURE);
 }
 
-// Prints the bf source at the current location
-void print_sourceviewer()
+/* Prints the bf source at the current location */
+void print_sourceviewer(bf_code_t *bf)
 {
-    printf("Source viewer:"
-           "-----------------------------------------------------------"
-           "_____________________________>+++++++++++++++[<+>>>>>>>>+++"
-           "                             ^                             "
-           "                             ip=0                          "
-           "-----------------------------------------------------------"); // just to get the idea ...
+    printf("\nSource viewer:                                           \n"
+           "-----------------------------------------------------------\n"
+           "_____________________________>+++++++++++++++[<+>>>>>>>>+++\n"
+           "                             ^                             \n"
+           "                             ip=0                          \n"
+           "-----------------------------------------------------------\n"); // just to get the idea ...
 }
 
-// Prints memory information at the current memory location
-void print_memoryviewer()
+/* Prints memory information at the current memory location */
+void print_memoryviewer(bf_code_t *bf)
 {
-    int pointerlocation = (p - memory)*sizeof(*memory); // find the arrayindex at which the pointer is pointing
+    // int pointerlocation = (p - memory)*sizeof(*memory); // find the arrayindex at which the pointer is pointing
 
-    printf("Memory viewer:                                             "
-           "-----------------------------------------------------------"
-           "000 000 000 000 000 000 001 001 000 000 000 000 000 000 000"
-           "                             ^                             "
-           "                            mp=1                           "
-           "249 250 251 252 253 254 000 001 002 003 004 005 006 007 008"
-           "-----------------------------------------------------------"); // just to get the idea ...
+    printf("\nMemory viewer:                                           \n"
+           "-----------------------------------------------------------\n"
+           "000 000 000 000 000 000 001 001 000 000 000 000 000 000 000\n"
+           "                             ^                             \n"
+           "                            mp=1                           \n"
+           "249 250 251 252 253 254 000 001 002 003 004 005 006 007 008\n"
+           "-----------------------------------------------------------\n"); // just to get the idea ...
 }
 
-// Pauses the program flow and prints information
-void bfuck_debugger(char *bf_source_input, int instructionpointer)
+/* Pauses the program flow and prints information */
+void bfuck_debugger(bf_code_t *bf) //char *bf_source_input, int instructionpointer)
 {
     clear(); // clear terminal
 
-    printf("[s]: single step [c]: continue");
+    printf("[s]: single step [c]: continue\n");
 
-    print_sourceviewer();
-    print_memoryviewer();
+    print_sourceviewer(bf);
+    print_memoryviewer(bf);
 
     switch(getchar()) {
     case 's':
@@ -79,64 +104,61 @@ void bfuck_debugger(char *bf_source_input, int instructionpointer)
         break;
     case 'c':
         // continue
+        bf->debug = false;
         break;
     }
-
 }
 
-// Parses and executes a brainfuck expression
-void bfuck_execute(char *input)
+/* Parses and executes a brainfuck expression */
+void bfuck_execute(bf_code_t *bf)
 {
     int loop = 0;
 
-    for(size_t i = 0; input[i] != 0; i++) { // where i is the instruction pointer
-        switch(input[i]) {
+    for(size_t i = bf->ip; bf->code[i] != 0; bf->ip=i++) { // where i is the instruction pointer
+        switch(bf->code[i]) {
         case '>':
-            if(memcnt >= MEMORY_SIZE) { // prevent overrun
-                p = &memory[0];
-                memcnt = 0;
+            if(bf->mp >= MEMORY_SIZE) { // prevent overrun
+                bf->mp = 0;
+
             } else {
-                ++p; // increment data pointer
-                ++memcnt;
+                ++(bf->mp); // increment memory pointer
             }
             break;
 
         case '<':
-            if(memcnt < 0) { // prevent underun
-                p = &memory[MEMORY_SIZE - 1];
-                memcnt = MEMORY_SIZE - 1;
+            if(bf->mp < 0) { // prevent underun
+                bf->mp = MEMORY_SIZE-1;
             } else {
-                --p; // decrement data pointer
-                --memcnt;
+                --(bf->mp); // decrement memory pointer
             }
             break;
 
         case '+':
-            ++(*p); // increment byte at data pointer
+            ++(bf->memory[bf->mp]); // increment byte at memory pointer
             break;
 
         case '-':
-            --(*p); // decrement byte at data pointer
+            --(bf->memory[bf->mp]); // decrement byte at memory pointer
             break;
 
         case '.':
-            putchar(*p); // output the byte at data pointer
+            putchar(bf->memory[bf->mp]); // output the byte at memory pointer
             break;
 
         case ',':
-            *p = getchar(); // accept one byte of input and store it at data pointer
+            bf->memory[bf->mp] = getchar(); // accept one byte of input and store it at memory pointer
             break;
 
         case '[':
-            if(*p == 0) { // if the byte at the data pointer is zero
+            if(bf->memory[bf->mp] == 0) { // if the byte at the memory pointer is zero
                 // jump forward to the command after the next ]
                 loop = 1;
                 while(loop > 0) { // count nested loops and make sure to get the matching ]
-                    i++;
-                    if(input[i] == '[') {
+                    bf->ip = i++;
+                    if(bf->code[i] == '[') {
                         loop++;
                     }
-                    if(input[i] == ']') {
+                    if(bf->code[i] == ']') {
                         loop--;
                     }
                 }
@@ -146,15 +168,15 @@ void bfuck_execute(char *input)
             break;
 
         case ']':
-            if(*p != 0) { // if the byte at the data pointer is nonzero
+            if(bf->memory[bf->mp] != 0) { // if the byte at the memory pointer is nonzero
                 // jump back to the command after the matching [
                 loop = 1;
                 while(loop > 0) { // count nested loops and make sure to get the matching [
-                    i--;
-                    if(input[i] == '[') {
+                    bf->ip = i--;
+                    if(bf->code[i] == '[') {
                         loop--;
                     }
-                    if(input[i] == ']') {
+                    if(bf->code[i] == ']') {
                         loop++;
                     }
                 }
@@ -166,6 +188,7 @@ void bfuck_execute(char *input)
 
         case '#':
             // Breakpoint reached, start debugger ...
+            bf->debug = true;
             break;
 
         default:
@@ -180,12 +203,15 @@ int main(int argc, char* argv[])
     FILE *fp;
     int i = 0;
     int c;
-    char input[MAX_INPUT_SIZE];
+    bf_code_t bf;
 
     // check arguments
     if(argc < 2) {
         die("Need more arguments.");
     }
+
+    // initialize bf object
+    init_bf_object(&bf);
 
     // try to open file
     if((fp = fopen(argv[1], "rt")) == NULL) {
@@ -194,14 +220,14 @@ int main(int argc, char* argv[])
 
     // read the file and store it in the input buffer
     while((c = getc(fp)) != EOF) {
-        input[i++] = c;
+        bf.code[i++]  = c;
     }
 
     // close file after reading
     fclose(fp);
 
     // try to interpret it
-    bfuck_execute(input);
+    bfuck_execute(&bf);
 
     // exit
     exit(EXIT_SUCCESS);
