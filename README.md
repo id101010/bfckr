@@ -7,6 +7,46 @@ A little brainfuck interpreter written in C.
 * Create your own brainfuck software
 * ./bfckr "$yourstuff"
 
+# Usage
+Usage: ./bfckr [OPTION] [FILE]
+-h        Show this help.
+-d        Enable debugger.
+-f         Execute brainfuck code given as file.
+-e        Execute brainfuck code given as argument.
+
+## examples:
+
+./bfckr -f examples/pi.bf
+~~~~
+3.14070455282885
+~~~~
+
+./bfckr -d -f examples/pi.bf
+~~~~
+[ENTER]: single step [c]: continue
+Source viewer:                                            
+------------------------------------------------------------
+                              >+++++++++++++++[<+>>>>>>>>+++
+                              ^                             
+                              ip=0                         
+------------------------------------------------------------
+
+Memory viewer:                                            
+------------------------------------------------------------
+000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 
+
+                              ^                             
+                              mp=1                         
+000 000 000 000 000 000 001 002 003 004 005 006 007 008 009 
+------------------------------------------------------------
+~~~~
+
+
+
+# Breakpoints
+
+\# in the brainfuck source will be interpreted as breakpoints. You can use them if you want to stop the program flow at a specific point and start the debugger from there. If you are in debugger mode pressing c will get you back to executing the program.
+
 # Licence
 
 ![WTFPL](http://www.wtfpl.net/wp-content/uploads/2012/12/logo-220x1601.png)

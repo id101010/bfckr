@@ -10,9 +10,9 @@
 #include<stdint.h>
 #include<stdlib.h>
 #include<errno.h>
-#include<assert.h>
 #include<ctype.h>
 #include<stdbool.h>
+#include<unistd.h>
 
 // Defines
 #define MEMORY_SIZE     10000
@@ -35,6 +35,9 @@ void print_sourceviewer(bf_code_t *bf);
 void print_memoryviewer(bf_code_t *bf);
 void init_bf_object(bf_code_t *bf);
 bool is_brainfuck(char c);
+int getopt(int argc, char * const argv[], const char *optstring);
+extern char *optarg;
+extern int optind, opterr, optopt;
 
 /* initialize bf object */
 void init_bf_object(bf_code_t *bf)
@@ -54,7 +57,7 @@ void init_bf_object(bf_code_t *bf)
 
 bool is_brainfuck(char c)
 {
-    return (c=='+') || (c=='-') || (c=='>') || (c=='<') || (c=='.') || (c==',') || (c=='[') || (c==']');
+    return (c=='+') || (c=='-') || (c=='>') || (c=='<') || (c=='.') || (c==',') || (c=='[') || (c==']' || (c=='#'));
 }
 
 /* Error handler */
@@ -82,8 +85,7 @@ void print_sourceviewer(bf_code_t *bf)
         putchar((i<0 || i>MAX_INPUT_SIZE) ? ' ' : bf->code[i]);
     }
 
-    printf("\n");
-    printf("                              ^                             \n");
+    printf("\n                              ^                             \n");
     printf("                              ip=%d                         \n", ip);
     printf("------------------------------------------------------------\n");
 }
@@ -121,18 +123,18 @@ void bfuck_debugger(bf_code_t *bf) //char *bf_source_input, int instructionpoint
 {
     clear(); // clear terminal
 
-    printf("[s]: single step [c]: continue\n");
+    printf("[ENTER]: single step [c]: continue\n");
 
     print_sourceviewer(bf);
     print_memoryviewer(bf);
 
     switch(getchar()) {
-    case 's':
-        // single step
-        break;
     case 'c':
         // continue
         bf->debug = false;
+        break;
+    default:
+        // single step
         break;
     }
 }
@@ -224,39 +226,62 @@ void bfuck_execute(bf_code_t *bf)
             break;
         }
 
-        bfuck_debugger(bf);
+        if(bf->debug) {
+            bfuck_debugger(bf);
+        }
     }
 }
 
 int main(int argc, char* argv[])
 {
+    // vars
     FILE *fp;
     int i = 0;
-    int c;
+    char c, option;
     bf_code_t bf;
+
+    // initialize bf object
+    init_bf_object(&bf);
 
     // check arguments
     if(argc < 2) {
         die("Need more arguments.");
     }
 
-    // initialize bf object
-    init_bf_object(&bf);
-
-    // try to open file
-    if((fp = fopen(argv[1], "rt")) == NULL) {
-        die("Couldn't open file.");
-    }
-
-    // read the file and store it in the input buffer
-    while((c = getc(fp)) != EOF) {
-        if(is_brainfuck(c)) {
-            bf.code[i++]  = c;
+    // optparsing ahead
+    while((option = getopt(argc, argv, "hdef:")) >= 0) {
+        switch(option) {
+        case 'h': // show help
+            printf("Usage: %s [OPTION] [FILE]\n", argv[0]);
+            printf("-h\t Show this help.\n");
+            printf("-d\t Enable debugger.\n");
+            printf("-f\t Execute brainfuck code given as file.\n");
+            printf("-e\t Execute brainfuck code given as string.\n");
+            exit(EXIT_SUCCESS);
+            break;
+        case 'e': // read input string
+            //printf ("Input code: \"%s\"\n", argv[2]);
+            sscanf(bf.code, "%s", argv[2]);
+            break;
+        case 'f': // file input
+            // try to open file
+            if((fp = fopen(optarg, "r")) == NULL) {
+                die("Couldn't open file.");
+            }
+            // read the file and store it in the input buffer
+            while((c = getc(fp)) != EOF) {
+                if(is_brainfuck(c)) {
+                    bf.code[i++]  = c;
+                }
+            }
+            // close file after reading
+            fclose(fp);
+            break;
+        case 'd': // set to use debugger
+            bf.debug = true;
+            break;
         }
     }
-
-    // close file after reading
-    fclose(fp);
 
     // try to interpret it
     bfuck_execute(&bf);
