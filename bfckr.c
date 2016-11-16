@@ -16,9 +16,9 @@
 #include<unistd.h>
 
 // Defines
-#define MEMORY_SIZE     1000
-#define MAX_INPUT_SIZE  1000
-#define clear()         printf("\033[H\033[J")
+#define MEMORY_SIZE     1000 // length of the band tape in bytes
+#define MAX_INPUT_SIZE  1000 // maximal number of input bytes 
+#define clear()         printf("\033[H\033[J") // clear the screen
 
 // Struct which holds the brainfuck code, the bandtape and some helpervariables
 typedef struct bf_code_s {
@@ -36,9 +36,57 @@ void print_sourceviewer(bf_code_t *bf);
 void print_memoryviewer(bf_code_t *bf);
 void init_bf_object(bf_code_t *bf);
 bool is_brainfuck(char c);
+char *colorize(char c);
 int getopt(int argc, char * const argv[], const char *optstring);
+
+// Globals
 extern char *optarg;
 extern int optind, opterr, optopt;
+char *colortheme[] = {
+    "\e[1;34m<\e[0m", // blue <
+    "\e[1;34m>\e[0m", // blue >
+    "\e[1;33m[\e[0m", // yellow [
+    "\e[1;33m]\e[0m", // yellow ]
+    "\e[1;32m+\e[0m", // green +
+    "\e[1;32m-\e[0m", // green -
+    "\e[1;31m.\e[0m", // red .
+    "\e[1;31m,\e[0m", // red ,
+};
+
+// Colorize instructions
+char *colorize(char c)
+{
+    char *cs; // colorstring
+
+    switch(c) {
+    case '>':
+        cs = colortheme[0];
+        break;
+    case '<':
+        cs = colortheme[1];
+        break;
+    case '[':
+        cs = colortheme[2];
+        break;
+    case ']':
+        cs = colortheme[3];
+        break;
+    case '+':
+        cs = colortheme[4];
+        break;
+    case '-':
+        cs = colortheme[5];
+        break;
+    case '.':
+        cs = colortheme[6];
+        break;
+    case ',':
+        cs = colortheme[7];
+        break;
+    }
+
+    return cs;
+}
 
 /* initialize bf object */
 void init_bf_object(bf_code_t *bf)
@@ -83,11 +131,11 @@ void print_sourceviewer(bf_code_t *bf)
 
     // print 30 valid chars before $ip and 30 after
     for(int i=(ip-30); i<(ip+30); i++) {
-        putchar((i<0 || i>MAX_INPUT_SIZE) ? ' ' : bf->code[i]);
+        printf("%s",((i<0 || i>MAX_INPUT_SIZE) ? " ": colorize(bf->code[i])));
     }
 
-    printf("\n                              ^                             \n");
-    printf("                              ip=%d                         \n", ip);
+    printf("\n                              \e[1;31m^\e[0m                             \n");
+    printf("                              \e[1;31mip=%d\e[0m                         \n", ip);
     printf("------------------------------------------------------------\n");
 }
 
@@ -104,8 +152,8 @@ void print_memoryviewer(bf_code_t *bf)
         printf("%03d ", ((i<0 || i>MEMORY_SIZE) ? 0 : bf->memory[i]));
     }
 
-    printf("\n                              ^                             \n");
-    printf("                              mp=%d                         \n", mp);
+    printf("\n                              \e[1;31m^\e[0m                             \n");
+    printf("                              \e[1;31mmp=%d\e[0m                         \n", mp);
 
 
     // print the adresses beneath the memory cells
