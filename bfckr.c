@@ -7,6 +7,7 @@
  */
 
 #include<stdio.h>
+#include<string.h>
 #include<stdint.h>
 #include<stdlib.h>
 #include<errno.h>
@@ -15,8 +16,8 @@
 #include<unistd.h>
 
 // Defines
-#define MEMORY_SIZE     10000
-#define MAX_INPUT_SIZE  10000
+#define MEMORY_SIZE     1000
+#define MAX_INPUT_SIZE  1000
 #define clear()         printf("\033[H\033[J")
 
 // Struct which holds the brainfuck code, the bandtape and some helpervariables
@@ -109,7 +110,12 @@ void print_memoryviewer(bf_code_t *bf)
 
     // print the adresses beneath the memory cells
     for(int i=(mp-7); i<(mp+8); i++) {
-        printf("%03d ", ((i<0 || i>MEMORY_SIZE) ? 0 : (mp+i)));
+
+        if((i<0) || i>MEMORY_SIZE) {
+            printf("%03d ", MEMORY_SIZE+i);
+        } else {
+            printf("%03d ", i);
+        }
     }
 
 
@@ -145,6 +151,11 @@ void bfuck_execute(bf_code_t *bf)
     int loop = 0;
 
     for(size_t i = bf->ip; bf->code[i] != 0; bf->ip=i++) { // where i is the instruction pointer
+
+        if(bf->debug) {
+            bfuck_debugger(bf);
+        }
+
         switch(bf->code[i]) {
         case '>':
             if(bf->mp >= MEMORY_SIZE) { // prevent overrun
@@ -225,10 +236,6 @@ void bfuck_execute(bf_code_t *bf)
             // Do nothing
             break;
         }
-
-        if(bf->debug) {
-            bfuck_debugger(bf);
-        }
     }
 }
 
@@ -249,7 +256,7 @@ int main(int argc, char* argv[])
     }
 
     // optparsing ahead
-    while((option = getopt(argc, argv, "hdef:")) >= 0) {
+    while((option = getopt(argc, argv, "hde:f:")) >= 0) {
         switch(option) {
         case 'h': // show help
             printf("Usage: %s [OPTION] [FILE]\n", argv[0]);
@@ -260,8 +267,8 @@ int main(int argc, char* argv[])
             exit(EXIT_SUCCESS);
             break;
         case 'e': // read input string
-            //printf ("Input code: \"%s\"\n", argv[2]);
-            sscanf(bf.code, "%s", argv[2]);
+            // copy optarg to the code register
+            memcpy(bf.code, optarg, strlen(optarg));
             break;
         case 'f': // file input
             // try to open file
