@@ -42,7 +42,9 @@ Memory viewer:
 ~~~~
 
 ./bfckr -e "----[---->+<]>++."
+~~~~
 A
+~~~~
 
 # Breakpoints
 
