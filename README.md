@@ -48,7 +48,27 @@ A
 
 # Breakpoints
 
-\# in the brainfuck source will be interpreted as breakpoints. You can use them if you want to stop the program flow at a specific point and start the debugger from there. If you are in debugger mode pressing c will get you back to executing the program.
+A # in the brainfuck source will be interpreted as breakpoint. You can use them if you want to stop the program flow at a specific point and start the debugger from there. If you are in debugger mode pressing c will get you back to executing the program.
+
+./bfckr -e "----[#---->+<]>++."
+~~~~
+[ENTER]: single step [c]: continue
+
+Source viewer:                                            
+------------------------------------------------------------
+                         ----[#---->+<]>++.
+                              ^                             
+                              ip=5                         
+------------------------------------------------------------
+
+Memory viewer:                                            
+------------------------------------------------------------
+000 000 000 000 000 000 000 -04 000 000 000 000 000 000 000 
+                              ^                             
+                              mp=0                         
+993 994 995 996 997 998 999 000 001 002 003 004 005 006 007 
+------------------------------------------------------------
+~~~~
 
 # Licence
 
