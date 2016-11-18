@@ -5,23 +5,27 @@ A little brainfuck interpreter written in C.
 * Type "make"
 * Read [this](https://en.wikipedia.org/wiki/Brainf**k)
 * Create your own brainfuck software
-* ./bfckr "$yourstuff"
+* let bfckr run your own .bf code
 
 # Usage
-Usage: ./bfckr [OPTION] [FILE]
+~~~~
+Usage: ./bfckr [OPTION]
 -h        Show this help.
 -d        Enable debugger.
--f         Execute brainfuck code given as file.
+-f        Execute brainfuck code given as file.
 -e        Execute brainfuck code given as argument.
+~~~~
+
+
 
 ## examples:
 
-./bfckr -f examples/pi.bf
+**./bfckr -f examples/pi.bf**
 ~~~~
 3.14070455282885
 ~~~~
 
-./bfckr -d -f examples/pi.bf
+**./bfckr -d -f examples/pi.bf**
 ~~~~
 [ENTER]: single step [c]: continue
 Source viewer:                                            
@@ -41,7 +45,7 @@ Memory viewer:
 ------------------------------------------------------------
 ~~~~
 
-./bfckr -e "----[---->+<]>++."
+**./bfckr -e "----[---->+<]>++."**
 ~~~~
 A
 ~~~~
@@ -50,7 +54,7 @@ A
 
 A # in the brainfuck source will be interpreted as breakpoint. You can use them if you want to stop the program flow at a specific point and start the debugger from there. If you are in debugger mode pressing c will get you back to executing the program.
 
-./bfckr -e "----[#---->+<]>++."
+**./bfckr -e "----[#---->+<]>++."**
 ~~~~
 [ENTER]: single step [c]: continue
 
