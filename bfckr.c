@@ -42,6 +42,8 @@ int getopt(int argc, char * const argv[], const char *optstring);
 // Globals
 extern char *optarg;
 extern int optind, opterr, optopt;
+char output_buffer[MEMORY_SIZE];
+size_t n_output_buffer = 0;
 char *colortheme[] = {
     "\e[1;34m<\e[0m", // blue <
     "\e[1;34m>\e[0m", // blue >
@@ -102,6 +104,11 @@ void init_bf_object(bf_code_t *bf)
     for(size_t i = 0; i < MAX_INPUT_SIZE; i++) {
         bf->code[i] = 0;
     }
+
+    for(size_t i = 0; i < MEMORY_SIZE; i++) {
+        output_buffer[i] = 0;
+    }
+
 }
 
 bool is_brainfuck(char c)
@@ -115,10 +122,22 @@ void die(const char *message)
     if(errno) {
         perror(message);
     } else {
-        printf("[:(] Error: %s\n", message);
+        printf("[\e[1;31m:(\e[0m] Error: %s\n", message);
     }
 
     exit(EXIT_FAILURE);
+}
+
+/* prints the current output buffered in global output_buffer */
+void print_output()
+{
+    printf("\nOutput viewer:                                            \n");
+    printf("------------------------------------------------------------\n"); // 61 dashes
+    // print the output buffer
+    for(size_t i = 0; i < n_output_buffer; i++) {
+        printf("\e[1;31m%c\e[0m", output_buffer[i]);
+    }
+    printf("\n------------------------------------------------------------\n");
 }
 
 /* Prints the bf source at the current location */
@@ -131,7 +150,7 @@ void print_sourceviewer(bf_code_t *bf)
 
     // print 30 valid chars before $ip and 30 after
     for(int i=(ip-30); i<(ip+30); i++) {
-        printf("%s",((i<0 || i>MAX_INPUT_SIZE) ? " ": colorize(bf->code[i])));
+        printf("%s",((i<0 || i>=strlen(bf->code)) ? " ": colorize(bf->code[i])));
     }
 
     printf("\n                              \e[1;31m^\e[0m                             \n");
@@ -181,6 +200,7 @@ void bfuck_debugger(bf_code_t *bf) //char *bf_source_input, int instructionpoint
 
     print_sourceviewer(bf);
     print_memoryviewer(bf);
+    print_output();
 
     switch(getchar()) {
     case 'c':
@@ -232,6 +252,7 @@ void bfuck_execute(bf_code_t *bf)
 
         case '.':
             putchar(bf->memory[bf->mp]); // output the byte at memory pointer
+            (n_output_buffer < MEMORY_SIZE) ? output_buffer[++n_output_buffer] = bf->memory[bf->mp] : 0; // write to output buffer for debugging
             break;
 
         case ',':
@@ -299,7 +320,7 @@ int main(int argc, char* argv[])
     init_bf_object(&bf);
 
     // check arguments
-    if(argc < 2) {
+    if(argc < 3) {
         die("Need more arguments.");
     }
 
@@ -335,6 +356,8 @@ int main(int argc, char* argv[])
         case 'd': // set to use debugger
             bf.debug = true;
             break;
+        default:
+            die("Invalid argument, see help.");
         }
     }
 
