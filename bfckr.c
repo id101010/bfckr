@@ -320,7 +320,7 @@ int main(int argc, char* argv[])
     init_bf_object(&bf);
 
     // check arguments
-    if(argc < 3) {
+    if(argc < 2) {
         die("Need more arguments.");
     }
 
