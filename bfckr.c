@@ -319,11 +319,6 @@ int main(int argc, char* argv[])
     // initialize bf object
     init_bf_object(&bf);
 
-    // check arguments
-    if(argc < 2) {
-        die("Need more arguments.");
-    }
-
     // optparsing ahead
     while((option = getopt(argc, argv, "hde:f:")) >= 0) {
         switch(option) {
