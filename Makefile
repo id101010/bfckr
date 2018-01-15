@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-std=c99 -Wall -O0 -static
+CFLAGS=-std=c99 -Wall -O3 -static
 CLIBS=-lm
 PRGNAME=bfckr
 CFILES=$(shell find . -name '*.c')
