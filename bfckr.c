@@ -53,6 +53,7 @@ char *colortheme[] = {
     "\e[1;32m-\e[0m", // green -
     "\e[1;31m.\e[0m", // red .
     "\e[1;31m,\e[0m", // red ,
+    "\e[1;31m#\e[0m", // red #
 };
 
 // Colorize instructions
@@ -84,6 +85,9 @@ char *colorize(char c)
         break;
     case ',':
         cs = colortheme[7];
+        break;
+    default:
+        cs = colortheme[8];
         break;
     }
 
@@ -358,6 +362,9 @@ int main(int argc, char* argv[])
 
     // try to interpret it
     bfuck_execute(&bf);
+
+    // test
+    printf("\n");
 
     // exit
     exit(EXIT_SUCCESS);
