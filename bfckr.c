@@ -86,8 +86,11 @@ char *colorize(char c)
     case ',':
         cs = colortheme[7];
         break;
-    default:
+    case '#':
         cs = colortheme[8];
+        break;
+    default:
+        ;
         break;
     }
 
