@@ -36,6 +36,7 @@ static void print_memoryviewer(bf_code_t *bf);
 static void init_bf_object(bf_code_t *bf);
 static bool is_brainfuck(char c);
 static char *colorize(char c);
+static void print_delimiter(char c, size_t length);
 int getopt(int argc, char * const argv[], const char *optstring);
 
 // Globals
@@ -156,6 +157,21 @@ static void die(const char *message)
 }
 
 /**
+ * @brief       Prints a delimiter line with the given length and character
+ * @type        static
+ * @param[in]   char delimiter      Character for the delimiter line
+ * @param[in]   size_t length       Length of the line to print
+ * @return      void
+ **/
+static void print_delimiter(char c, size_t length)
+{
+    for(size_t i = 0; i <= length; i++){
+        printf("%c", c);
+    }
+    printf("\n");
+}
+
+/**
  * @brief       Prints the current ouput buffered in global output_buffer
  * @type        static
  * @param[in]   void
@@ -163,13 +179,14 @@ static void die(const char *message)
  **/
 static void print_output()
 {
-    printf("\nOutput viewer:                                            \n");
-    printf("------------------------------------------------------------\n"); // 61 dashes
+    printf("\nOutput viewer:\n");
+    print_delimiter('-', 61);
     // print the output buffer
     for(size_t i = 0; i < n_output_buffer; i++) {
         printf("\e[1;31m%c\e[0m", output_buffer[i]);
     }
-    printf("\n------------------------------------------------------------\n");
+    printf("\n");
+    print_delimiter('-', 61);
 }
 
 /**
@@ -182,17 +199,15 @@ static void print_sourceviewer(bf_code_t *bf)
 {
     int ip = (int)bf->ip; // save instruction pointer
 
-    printf("\nSource viewer:                                            \n");
-    printf("------------------------------------------------------------\n"); // 61 dashes
-
+    printf("\nSource viewer:\n");
+    print_delimiter('-', 61);
     // print 30 valid chars before $ip and 30 after
     for(int i=(ip-30); i<(ip+30); i++) {
         printf("%s",((i<0 || i>=strlen(bf->code)) ? " ": colorize(bf->code[i])));
     }
-
     printf("\n                              \e[1;31m^\e[0m                             \n");
     printf("                              \e[1;31mip=%d\e[0m                         \n", ip);
-    printf("------------------------------------------------------------\n");
+    print_delimiter('-', 61);
 }
 
 /**
@@ -205,18 +220,17 @@ void print_memoryviewer(bf_code_t *bf)
 {
     int mp = (int)bf->mp; // save the current memory pointer
 
-    printf("\nMemory viewer:                                            \n");
-    printf("------------------------------------------------------------\n"); // 61 dashes
-
+    printf("\nMemory viewer:\n");
+    print_delimiter('-', 61);
     // print the memory cells
     for(int i=(mp-7); i<(mp+8); i++) {
         printf("%03d ", ((i<0 || i>MEMORY_SIZE) ? 0 : bf->memory[i]));
     }
 
+    // Print the pointers
     printf("\n                              \e[1;31m^\e[0m                             \n");
     printf("                              \e[1;31mmp=%d\e[0m                         \n", mp);
-
-
+    
     // print the adresses beneath the memory cells
     for(int i=(mp-7); i<(mp+8); i++) {
 
@@ -226,11 +240,8 @@ void print_memoryviewer(bf_code_t *bf)
             printf("%03d ", i);
         }
     }
-
-
-    //"249 250 251 252 253 254 000 001 002 003 004 005 006 007 008\n"
-
-    printf("\n------------------------------------------------------------\n");
+    printf("\n");
+    print_delimiter('-', 61);
 }
 
 /**
