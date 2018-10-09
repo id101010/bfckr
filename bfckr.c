@@ -165,7 +165,7 @@ static void die(const char *message)
  **/
 static void print_delimiter(char c, size_t length)
 {
-    for(size_t i = 0; i <= length; i++){
+    for(size_t i = 0; i <= length; i++) {
         printf("%c", c);
     }
     printf("\n");
@@ -230,7 +230,7 @@ void print_memoryviewer(bf_code_t *bf)
     // Print the pointers
     printf("\n                              \e[1;31m^\e[0m                             \n");
     printf("                              \e[1;31mmp=%d\e[0m                         \n", mp);
-    
+
     // print the adresses beneath the memory cells
     for(int i=(mp-7); i<(mp+8); i++) {
 
