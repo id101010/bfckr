@@ -30,3 +30,11 @@ run:
 
 memtest:
 	$(RUN) ./$(PRGNAME) $(ARGS)
+
+install:
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	cp -f bfckr $(DESTDIR)$(PREFIX)/bin
+	chmod 755 $(DESTDIR)$(PREFIX)/bin/bfckr
+
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/bin/bfckr
