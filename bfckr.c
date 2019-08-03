@@ -58,7 +58,7 @@ char *colortheme[] = {
 // Colorize instructions
 char *colorize(char c)
 {
-    char *cs; // colorstring
+    char *cs = 0; // colorstring
 
     switch(c) {
     case '>':
