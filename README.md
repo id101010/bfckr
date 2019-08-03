@@ -1,4 +1,4 @@
-# bfckr
+# bfckr [![Build Status](https://travis-ci.org/id101010/bfckr.svg?branch=master)](https://travis-ci.org/id101010/bfckr)
 A little brainfuck interpreter written in C.
 
 # How to run

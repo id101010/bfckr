@@ -30,13 +30,13 @@ typedef struct bf_code_s {
 } bf_code_t;
 
 // Prototypes
-void bfuck_parser(bf_code_t *bf);
-void bfuck_debugger(bf_code_t *bf);
-void print_sourceviewer(bf_code_t *bf);
-void print_memoryviewer(bf_code_t *bf);
-void init_bf_object(bf_code_t *bf);
-bool is_brainfuck(char c);
-char *colorize(char c);
+static void bfuck_debugger(bf_code_t *bf);
+static void print_sourceviewer(bf_code_t *bf);
+static void print_memoryviewer(bf_code_t *bf);
+static void init_bf_object(bf_code_t *bf);
+static bool is_brainfuck(char c);
+static char *colorize(char c);
+static void print_delimiter(char c, size_t length);
 int getopt(int argc, char * const argv[], const char *optstring);
 
 // Globals
@@ -53,10 +53,16 @@ char *colortheme[] = {
     "\e[1;32m-\e[0m", // green -
     "\e[1;31m.\e[0m", // red .
     "\e[1;31m,\e[0m", // red ,
+    "\e[1;31m#\e[0m", // red #
 };
 
-// Colorize instructions
-char *colorize(char c)
+/**
+ * @brief       Colorize the ouput string using a colorscheme table
+ * @type        static
+ * @param[in]   Single character to be colorized
+ * @return      Colorized string
+ **/
+static char *colorize(char c)
 {
     char *cs = 0; // colorstring
 
@@ -85,13 +91,24 @@ char *colorize(char c)
     case ',':
         cs = colortheme[7];
         break;
+    case '#':
+        cs = colortheme[8];
+        break;
+    default:
+        ;
+        break;
     }
 
     return cs;
 }
 
-/* initialize bf object */
-void init_bf_object(bf_code_t *bf)
+/**
+ * @brief       Initialize a brainfuck object by setting all values to zero
+ * @type        static
+ * @param[in]   Pointer to a bf_code_t type
+ * @return      void
+ **/
+static void init_bf_object(bf_code_t *bf)
 {
     bf->mp = 0; // set data pointer to zero
     bf->ip = 0; // set instruction pointer to zero
@@ -111,13 +128,24 @@ void init_bf_object(bf_code_t *bf)
 
 }
 
-bool is_brainfuck(char c)
+/**
+ * @brief       Tests if a single character contains a valid brainfuck instruction
+ * @type        static
+ * @param[in]   char c containing a brainfuck instruction to test
+ * @return      bool which is true if the instruction is in brainfuck set or false if not
+ **/
+static bool is_brainfuck(char c)
 {
     return (c=='+') || (c=='-') || (c=='>') || (c=='<') || (c=='.') || (c==',') || (c=='[') || (c==']' || (c=='#'));
 }
 
-/* Error handler */
-void die(const char *message)
+/**
+ * @brief       Error handler function wich shuts down the application and prints to stderr
+ * @type        static
+ * @param[in]   Message string
+ * @return      void
+ **/
+static void die(const char *message)
 {
     if(errno) {
         perror(message);
@@ -128,52 +156,80 @@ void die(const char *message)
     exit(EXIT_FAILURE);
 }
 
-/* prints the current output buffered in global output_buffer */
-void print_output()
+/**
+ * @brief       Prints a delimiter line with the given length and character
+ * @type        static
+ * @param[in]   char delimiter      Character for the delimiter line
+ * @param[in]   size_t length       Length of the line to print
+ * @return      void
+ **/
+static void print_delimiter(char c, size_t length)
 {
-    printf("\nOutput viewer:                                            \n");
-    printf("------------------------------------------------------------\n"); // 61 dashes
+    for(size_t i = 0; i <= length; i++) {
+        printf("%c", c);
+    }
+    printf("\n");
+}
+
+/**
+ * @brief       Prints the current ouput buffered in global output_buffer
+ * @type        static
+ * @param[in]   void
+ * @return      void
+ **/
+static void print_output()
+{
+    printf("\nOutput viewer:\n");
+    print_delimiter('-', 61);
     // print the output buffer
     for(size_t i = 0; i < n_output_buffer; i++) {
         printf("\e[1;31m%c\e[0m", output_buffer[i]);
     }
-    printf("\n------------------------------------------------------------\n");
+    printf("\n");
+    print_delimiter('-', 61);
 }
 
-/* Prints the bf source at the current location */
-void print_sourceviewer(bf_code_t *bf)
+/**
+ * @brief       Prints the bf source code at the current location
+ * @type        static
+ * @param[in]   Pointer to a bf_code_t type
+ * @return      void
+ **/
+static void print_sourceviewer(bf_code_t *bf)
 {
     int ip = (int)bf->ip; // save instruction pointer
 
-    printf("\nSource viewer:                                            \n");
-    printf("------------------------------------------------------------\n"); // 61 dashes
-
+    printf("\nSource viewer:\n");
+    print_delimiter('-', 61);
     // print 30 valid chars before $ip and 30 after
     for(int i=(ip-30); i<(ip+30); i++) {
         printf("%s",((i<0 || i>=strlen(bf->code)) ? " ": colorize(bf->code[i])));
     }
-
     printf("\n                              \e[1;31m^\e[0m                             \n");
     printf("                              \e[1;31mip=%d\e[0m                         \n", ip);
-    printf("------------------------------------------------------------\n");
+    print_delimiter('-', 61);
 }
 
-/* Prints memory information at the current memory location */
+/**
+ * @brief       Prints a memory dump at the current memory location
+ * @type        static
+ * @param[in]   Pointer to a bf_code_t type
+ * @return      void
+ **/
 void print_memoryviewer(bf_code_t *bf)
 {
     int mp = (int)bf->mp; // save the current memory pointer
 
-    printf("\nMemory viewer:                                            \n");
-    printf("------------------------------------------------------------\n"); // 61 dashes
-
+    printf("\nMemory viewer:\n");
+    print_delimiter('-', 61);
     // print the memory cells
     for(int i=(mp-7); i<(mp+8); i++) {
         printf("%03d ", ((i<0 || i>MEMORY_SIZE) ? 0 : bf->memory[i]));
     }
 
+    // Print the pointers
     printf("\n                              \e[1;31m^\e[0m                             \n");
     printf("                              \e[1;31mmp=%d\e[0m                         \n", mp);
-
 
     // print the adresses beneath the memory cells
     for(int i=(mp-7); i<(mp+8); i++) {
@@ -184,15 +240,17 @@ void print_memoryviewer(bf_code_t *bf)
             printf("%03d ", i);
         }
     }
-
-
-    //"249 250 251 252 253 254 000 001 002 003 004 005 006 007 008\n"
-
-    printf("\n------------------------------------------------------------\n");
+    printf("\n");
+    print_delimiter('-', 61);
 }
 
-/* Pauses the program flow and prints information */
-void bfuck_debugger(bf_code_t *bf) //char *bf_source_input, int instructionpointer)
+/**
+ * @brief       Pauses the program flow and prints information
+ * @type        static
+ * @param[in]   Pointer to a bf_code_t type
+ * @return      void
+ **/
+static void bfuck_debugger(bf_code_t *bf)
 {
     clear(); // clear terminal
 
@@ -213,8 +271,13 @@ void bfuck_debugger(bf_code_t *bf) //char *bf_source_input, int instructionpoint
     }
 }
 
-/* Parses and executes a brainfuck expression */
-void bfuck_execute(bf_code_t *bf)
+/**
+ * @brief       Parses and executes a brainfuck expression using a simple state machine
+ * @type        static
+ * @param[in]   Pointer to a bf_code_t type
+ * @return      void
+ **/
+static void bfuck_execute(bf_code_t *bf)
 {
     int loop = 0;
 
@@ -308,6 +371,13 @@ void bfuck_execute(bf_code_t *bf)
     }
 }
 
+/**
+ * @brief       Main function which handles the argument parsing
+ * @type        static
+ * @param[in]   int argc        Argument counter
+ * @param[in]   char **argv     Argument vector
+ * @return      int Exitcode    Exitcode of the application
+ **/
 int main(int argc, char* argv[])
 {
     // vars
@@ -358,6 +428,9 @@ int main(int argc, char* argv[])
 
     // try to interpret it
     bfuck_execute(&bf);
+
+    // test
+    printf("\n");
 
     // exit
     exit(EXIT_SUCCESS);
