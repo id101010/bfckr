@@ -1,5 +1,5 @@
 # bfckr [![Build Status](https://travis-ci.org/id101010/bfckr.svg?branch=master)](https://travis-ci.org/id101010/bfckr)
-A little brainfuck interpreter written in C.
+A simple to use brainfuck interpreter with built in debugger written in C.
 
 # How to run
 * Type "make"
@@ -13,10 +13,8 @@ Usage: ./bfckr [OPTION]
 -h        Show this help.
 -d        Enable debugger.
 -f        Execute brainfuck code given as file.
--e        Execute brainfuck code given as argument.
+-e        Execute brainfuck expression given as argument.
 ~~~~
-
-
 
 ## examples:
 
