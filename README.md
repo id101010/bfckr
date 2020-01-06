@@ -53,7 +53,7 @@ Output viewer:
 A
 ~~~~
 
-** echo "42=" | ./bfckr -f examples/bintodec.bf **
+**echo "42=" | ./bfckr -f examples/bintodec.bf**
 ~~~
 42=101010
 ~~~
