@@ -53,6 +53,11 @@ Output viewer:
 A
 ~~~~
 
+** echo "42=" | ./bfckr -f examples/bintodec.bf **
+~~~
+42=101010
+~~~
+
 # Breakpoints
 
 A # in the brainfuck source will be interpreted as breakpoint. You can use them if you want to stop the program flow at a specific point and start the debugger from there. If you are in debugger mode pressing c will get you back to executing the program.
