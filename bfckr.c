@@ -67,10 +67,10 @@ static char *colorize(char c)
     char *cs = 0; // colorstring
 
     switch(c) {
-    case '>':
+    case '<':
         cs = colortheme[0];
         break;
-    case '<':
+    case '>':
         cs = colortheme[1];
         break;
     case '[':
